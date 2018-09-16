@@ -11,7 +11,7 @@ $ pip install imagedb
 ## Usage
 
 ```python
->>> from imagedb.app import ImageDB
+>>> from imagedb import ImageDB
 >>> from IPython.display import HTML, display
 >>> image_db = ImageDB('image.db')
 An image server for the database is run.
