@@ -3,7 +3,6 @@ from werkzeug.utils import secure_filename
 
 from pathlib import Path
 from nonrepeat import nonrepeat_filename
-import shutil
 from slugify import slugify
 from uuid import uuid4
 
@@ -17,14 +16,14 @@ def create_image():
     global filename
 
     if 'file' in request.files:
-        image_path = Path(config['image_db'].db_folder).joinpath(request.form.get('imagePath'))
+        image_path = Path(config['image_db'].db_folder)
         tags = request.form.get('tags')
         if image_path.suffix:
             image_path = image_path.parent
 
         file = request.files['file']
         if file.filename == 'image.png':
-            filename = 'blob/' + str(uuid4()) + '.png'
+            filename = 'blob/' + str(uuid4())[:8] + '.png'
             image_path.joinpath('blob').mkdir(parents=True, exist_ok=True)
         else:
             filename = secure_filename(file.filename)
@@ -37,10 +36,9 @@ def create_image():
                                       root=str(image_path))
         db_image = db.Image()
         db_image.filename = filename
-        config['image_db'].mark(db_image, tags)
+        filename = db_image.filename
 
-        config['image_db'].session.add(db_image)
-        config['image_db'].session.commit()
+        db_image.add_tags(tags)
 
         true_filename = str(image_path.joinpath(filename))
         file.save(true_filename)
@@ -57,28 +55,20 @@ def create_image():
 def rename_image():
     global filename
 
-    db_image = config['image_db'].session.query(db.Image).filter_by(filename=filename).first()
+    db_image = config['image_db'].session.query(db.Image).filter_by(_filename=filename).first()
 
     if filename is not None and db_image is not None:
         post_json = request.get_json()
 
-        new_filename = Path(post_json['filename'])\
-            .with_suffix(Path(filename).suffix)
-        new_filename.parent.mkdir(parents=True, exist_ok=True)
-
-        new_filename = new_filename.with_name(secure_filename(new_filename.name))
-        new_filename = nonrepeat_filename(str(new_filename),
-                                          root=config['image_db'].db_folder)
-
-        true_filename = str(Path(config['image_db'].db_folder).joinpath(new_filename))
-
-        shutil.move(str(Path(config['image_db'].db_folder).joinpath(filename)),
-                    true_filename)
-        filename = new_filename
-
-        db_image.filename = filename
-        config['image_db'].mark(db_image, post_json['tags'])
+        db_image.add_tags(post_json['tags'])
         config['image_db'].session.commit()
+
+        new_filename = str(Path(post_json['filename']).with_suffix(Path(filename).suffix))
+
+        db_image.filename = new_filename
+        filename = db_image.filename
+
+        true_filename = str(Path(config['image_db'].db_folder).joinpath(filename))
 
         return jsonify({
             'filename': filename,

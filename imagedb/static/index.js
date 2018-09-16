@@ -24,7 +24,7 @@ inputBar.onpaste = ()=>{
         formData.append('extension', extension);
         formData.append('mimetype', file.type);
         formData.append('submission-type', 'paste');
-        formData.append('imagePath', imagePath);
+        // formData.append('imagePath', imagePath);
         formData.append('tags', tags);
         fetch('/api/images/create', {
           method: 'POST',
