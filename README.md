@@ -1,6 +1,6 @@
 # ImageDB
 
-Store images, especially from Clipboard, in a single file.
+Store images, especially from Clipboard, in database.
 
 ## Installation
 
@@ -13,10 +13,9 @@ $ pip install imagedb
 ```python
 >>> from imagedb.app import ImageDB
 >>> from IPython.display import HTML, display
->>> db = ImageDB('user/image.db')
->>> image = db.from_clipboard('foo') # Tag as foo
->>> HTML(image.to_html())
-An image from clipboard is shown.
+>>> image_db = ImageDB('image.db')
+>>> image_db.run_server()
+An image server for the database is run.
 >>> for image in db.search()[10:]:
 ...    db.mark(image, 'bar') # Tag as bar
 ...    # display(HTML(image.to_html()))

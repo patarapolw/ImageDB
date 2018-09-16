@@ -236,3 +236,4 @@ pip-selfcheck.json
 # End of https://www.gitignore.io/api/osx,python,pycharm
 
 user/*
+*.ipynb

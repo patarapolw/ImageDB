@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
+</head>
+<body>
+  <center>
+    <div id='tags-area'>
+      <input id='tags-bar' type='text' placeholder="Type your tags here, separated by commas."/>
+    </div>
+    <input id='input-bar' type='text' placeholder="Paste your image here."/><br />
+    <img id='image-canvas' />
+  </center>
+
+  <script src="{{ url_for('static', filename='index.js') }}"></script>
+</body>
+</html>

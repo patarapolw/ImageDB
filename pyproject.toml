@@ -1,13 +1,16 @@
 [tool.poetry]
 name = "imagedb"
-version = "0.1.0"
-description = "Store images, especially from Clipboard, in a single file"
+version = "0.1.1"
+description = "Store images, especially from Clipboard, in database"
 authors = ["patarapolw <patarapolw@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "*"
 pillow = "^5.2"
 sqlalchemy = "^1.2"
+nonrepeat = "^0.1.1"
+flask = "^1.0"
+python-slugify = "^1.2"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0"
