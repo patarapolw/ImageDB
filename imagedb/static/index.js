@@ -40,11 +40,9 @@ inputBar.onpaste = ()=>{
   }
 }
 
-inputBar.addEventListener("keydown", function(event) {
-  imagePath = inputBar.value;
-});
-
 inputBar.addEventListener("keyup", function(event) {
+  imagePath = inputBar.value;
+
   if (event.keyCode === 13) {
     fetch('/api/images/rename', {
       method: 'POST',
@@ -65,7 +63,7 @@ inputBar.addEventListener("keyup", function(event) {
   }
 });
 
-tagsBar.addEventListener("keydown", function(event) {
+tagsBar.addEventListener("keyup", function(event) {
   function purge(tag){
     tag = tag.trim();
     if(tag){
