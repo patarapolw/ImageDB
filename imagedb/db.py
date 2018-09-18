@@ -331,11 +331,11 @@ class Image(Base):
             self.version[-1].revert()
 
     @classmethod
-    def similar_images(cls, image_hash, threshold=5):
+    def similar_images(cls, h, threshold=5):
         from . import config
 
         for db_image in config['image_db'].session.query(cls).all():
-            if imagehash.hex_to_hash(db_image.image_hash) - imagehash.hex_to_hash(image_hash) > threshold:
+            if imagehash.hex_to_hash(db_image.image_hash) - imagehash.hex_to_hash(h) < threshold:
                 yield db_image
 
 
