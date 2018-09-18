@@ -188,10 +188,11 @@ class Image(Base):
         im = shrink_image(im)
 
         h = str(imagehash.dhash(im))
-        pre_existing = config['image_db'].session.query(cls).filter_by(image_hash=h).first()
-        if pre_existing is not None:
+        try:
+            pre_existing = next(cls.similar_images(h))
             raise ValueError('Similar image exists: {}'.format(pre_existing.path))
-        else:
+
+        except StopIteration:
             im.save(true_filename)
 
             db_image = cls()
@@ -328,6 +329,14 @@ class Image(Base):
                                 str(self.path.with_name('__' + self.path.name)))
 
             self.version[-1].revert()
+
+    @classmethod
+    def similar_images(cls, image_hash, threshold=5):
+        from . import config
+
+        for db_image in config['image_db'].session.query(cls).all():
+            if imagehash.hex_to_hash(db_image.image_hash) - imagehash.hex_to_hash(image_hash) > threshold:
+                yield db_image
 
 
 class Tag(Base):

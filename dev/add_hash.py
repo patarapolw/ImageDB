@@ -11,6 +11,5 @@ if __name__ == '__main__':
             im = Image.open(db_image.path)
             h = str(imagehash.dhash(im))
             db_image.image_hash = h
-            print(db_image.image_hash)
-            # db.session.commit()
-            # print(db_image.to_json())
+
+    db.session.commit()
