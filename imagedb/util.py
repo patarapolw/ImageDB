@@ -2,6 +2,7 @@ from threading import Thread
 from time import sleep
 import webbrowser
 from PIL import Image, ImageChops
+import enum
 
 
 def open_browser_tab(url):
@@ -26,12 +27,23 @@ def trim_image(im):
     return im
 
 
-def shrink_image(im, max_width=800, max_height=600):
+def shrink_image(im, max_width=800):
     width, height = im.size
 
-    if width / height < max_width / max_height:
-        im.thumbnail((max_height, max_height))
-    else:
-        im.thumbnail((max_width, max_width))
+    if width > max_width:
+        im.thumbnail((max_width, height * max_width / width))
 
     return im
+
+
+class HAlign(enum.Enum):
+    LEFT = -1
+    CENTER = 0
+    RIGHT = 1
+
+
+class VAlign(enum.Enum):
+    TOP = 1
+    MIDDLE = 0
+    BOTTOM = -1
+

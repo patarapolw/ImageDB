@@ -2,9 +2,10 @@ const tagsBar = document.getElementById('tags-bar');
 const inputBar = document.getElementById('input-bar');
 const imageCanvas = document.getElementById('image-canvas');
 
-let tags = [];
+let tags = JSON.parse(localStorage.getItem('tags') || '[]');
 let imagePath = '';
 
+tagsBar.value = joinTags();
 inputBar.value = imagePath;
 
 inputBar.onpaste = ()=>{
@@ -14,7 +15,7 @@ inputBar.onpaste = ()=>{
     const item = items[index];
     if (item.kind === 'file') {
       const file = item.getAsFile();
-      console.log(file);
+
       let reader = new FileReader();
       reader.onload = function(event) {
         const extension = file.type.match(/\/([a-z0-9]+)/i)[1].toLowerCase();
@@ -26,13 +27,23 @@ inputBar.onpaste = ()=>{
         formData.append('submission-type', 'paste');
         // formData.append('imagePath', imagePath);
         formData.append('tags', tags);
+
+        localStorage.setItem('tags', JSON.stringify(tags));
+
         fetch('/api/images/create', {
           method: 'POST',
           body: formData
         }).then(response=>response.json())
           .then(responseJson=>{
-            inputBar.value = responseJson.filename;
-            imageCanvas.src = '/images?filename=' + encodeURIComponent(responseJson.trueFilename);
+            if(responseJson.filename){
+              inputBar.value = responseJson.filename;
+              imageCanvas.src = '/images?filename=' + encodeURIComponent(responseJson.trueFilename);
+            } else {
+              alert(responseJson.message);
+            }
+          })
+          .catch(error => {
+            console.error(error);
           });
       };
       reader.readAsBinaryString(file);
@@ -44,6 +55,8 @@ inputBar.addEventListener("keyup", function(event) {
   imagePath = inputBar.value;
 
   if (event.keyCode === 13) {
+    localStorage.setItem('tags', JSON.stringify(tags));
+
     fetch('/api/images/rename', {
       method: 'POST',
       headers: {
@@ -91,4 +104,17 @@ tagsBar.addEventListener("keyup", function(event) {
   });
 
   purge(currentTag);
-})
+});
+
+function joinTags(){
+  let result = []
+  tags.forEach((tag, index)=>{
+    if(tag.indexOf(',') !== -1){
+      result.push('\"' + tag + '\"');
+    } else {
+      result.push(tag);
+    }
+  });
+
+  return result.join(', ')
+}

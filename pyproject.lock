@@ -1,20 +1,5 @@
 [[package]]
 category = "dev"
-description = "A database migration tool for SQLAlchemy."
-name = "alembic"
-optional = false
-platform = "*"
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "1.0.0"
-
-[package.dependencies]
-Mako = "*"
-SQLAlchemy = ">=0.9.0"
-python-dateutil = "*"
-python-editor = ">=0.3"
-
-[[package]]
-category = "dev"
 description = "Disable App Nap on OS X 10.9"
 name = "appnope"
 optional = false
@@ -358,18 +343,6 @@ version = "4.4.0"
 traitlets = "*"
 
 [[package]]
-category = "dev"
-description = "A super-fast templating language that borrows the  best ideas from the existing templating languages."
-name = "mako"
-optional = false
-platform = "*"
-python-versions = "*"
-version = "1.0.7"
-
-[package.dependencies]
-MarkupSafe = ">=0.9.2"
-
-[[package]]
 category = "main"
 description = "Implements a XML/HTML/XHTML Markup safe string for Python"
 name = "markupsafe"
@@ -431,7 +404,7 @@ name = "nonrepeat"
 optional = false
 platform = "*"
 python-versions = "*"
-version = "0.1.2"
+version = "0.1.3"
 
 [[package]]
 category = "dev"
@@ -598,15 +571,6 @@ version = "2.7.3"
 six = ">=1.5"
 
 [[package]]
-category = "dev"
-description = "Programmatically open an editor, capture the result."
-name = "python-editor"
-optional = false
-platform = "*"
-python-versions = "*"
-version = "1.0.3"
-
-[[package]]
 category = "main"
 description = "A Python Slugify application that handles Unicode"
 name = "python-slugify"
@@ -712,32 +676,6 @@ optional = false
 platform = "*"
 python-versions = "*"
 version = "1.2.11"
-
-[[package]]
-category = "main"
-description = "Versioning and auditing extension for SQLAlchemy."
-name = "sqlalchemy-continuum"
-optional = false
-platform = "any"
-python-versions = "*"
-version = "1.3.6"
-
-[package.dependencies]
-SQLAlchemy = ">=1.0.8"
-SQLAlchemy-Utils = ">=0.30.12"
-
-[[package]]
-category = "main"
-description = "Various utility functions for SQLAlchemy."
-name = "sqlalchemy-utils"
-optional = false
-platform = "any"
-python-versions = "*"
-version = "0.33.4"
-
-[package.dependencies]
-SQLAlchemy = ">=1.0"
-six = "*"
 
 [[package]]
 category = "dev"
@@ -860,12 +798,11 @@ platform = "win32"
 python = "<3.6"
 
 [metadata]
-content-hash = "0ab9aaffa9578f9b1388ae9d402b1e56240d5a0d919a304029297128678f49d1"
+content-hash = "8e803bdeee62aa83ee558e65bb2b58a58dd063fbf295d5b77bca0b8fe27d4037"
 platform = "*"
 python-versions = "*"
 
 [metadata.hashes]
-alembic = ["52d73b1d750f1414fa90c25a08da47b87de1e4ad883935718a8f36396e19e78e", "eb7db9b4510562ec37c91d00b00d95fde076c1030d3f661aea882eec532b3565"]
 appnope = ["5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0", "8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71"]
 backcall = ["38ecd85be2c1e78f77fd91700c76e14667dc21e2713b63876c0eb901196e01e4", "bbbf4b1e5cd2bdb08f915895b51081c041bac22394fdfcfdfbe9f14b77c08bf2"]
 "backports.shutil-which" = ["ce71e4040360e239d142e73d28d592f1951cdff4330db6616efcb43d1abe6ad4", "dd439a7b02433e47968c25a45a76704201c4ef2167deb49830281c379b1a4a9b"]
@@ -892,12 +829,11 @@ jsonschema = ["000e68abd33c972a5248544925a0cae7d1125f9bf6c58280d37546b946769a08"
 jupyter = ["3e1f86076bbb7c8c207829390305a2b1fe836d471ed54be66a3b8c41e7f46cc7", "5b290f93b98ffbc21c0c7e749f054b3267782166d72fa5e3ed1ed4eaf34a2b78", "d9dc4b3318f310e34c82951ea5d6683f67bed7def4b259fafbfe4f1beb1d8e5f"]
 jupyter-client = ["27befcf0446b01e29853014d6a902dd101ad7d7f94e2252b1adca17c3466b761", "59e6d791e22a8002ad0e80b78c6fd6deecab4f9e1b1aa1a22f4213de271b29ea"]
 jupyter-core = ["927d713ffa616ea11972534411544589976b2493fc7e09ad946e010aa7eb9970", "ba70754aa680300306c699790128f6fbd8c306ee5927976cbe48adacf240c0b7"]
-mako = ["4e02fde57bd4abb5ec400181e4c314f56ac3e49ba4fb8b0d50bba18cb27d25ae"]
 markupsafe = ["a6be69091dac236ea9c6bc7d012beab42010fa914c459791d627dad4910eb665"]
 mistune = ["b4c512ce2fc99e5a62eb95a4aba4b73e5f90264115c40b70a21e1f7d4e0eac91", "bc10c33bfdcaa4e749b779f62f60d6e12f8215c46a292d05e486b869ae306619"]
 nbconvert = ["08d21cf4203fabafd0d09bbd63f06131b411db8ebeede34b0fd4be4548351779", "a8a2749f972592aa9250db975304af6b7337f32337e523a2c995cc9e12c07807"]
 nbformat = ["b9a0dbdbd45bb034f4f8893cafd6f652ea08c8c1674ba83f2dc55d3955743b0b", "f7494ef0df60766b7cabe0a3651556345a963b74dbc16bc7c18479041170d402"]
-nonrepeat = ["0fdf9eb24962e7f3e4e106192792f88b612c6b8a52c185ce36fed60699bfd68a", "8d0a9137866a9b2d9651311a789ddbe9273d2eb808bc00e2166733f33665f35f"]
+nonrepeat = ["0f790d79742311ce513da57c1a58ea3734ad2e6347918a4713099264da88d58f", "ef3e8f61c6fd1e04d17b1eb66b9210adfb6844092b10265bbf913d6fa376a005"]
 notebook = ["66dd59e76e755584ae9450eb015c39f55d4bb1d8ec68f2c694d2b3cba7bf5c7e", "e2c8e931cc19db4f8c63e6a396efbc13a228b2cb5b2919df011b946f28239a08"]
 numpy = ["1c362ad12dd09a43b348bb28dd2295dd9cdf77f41f0f45965e04ba97f525b864", "2156a06bd407918df4ac0122df6497a9c137432118f585e5b17d543e593d1587", "24e4149c38489b51fc774b1e1faa9103e82f73344d7a00ba66f6845ab4769f3f", "340ec1697d9bb3a9c464028af7a54245298502e91178bddb4c37626d36e197b7", "35db8d419345caa4eeaa65cd63f34a15208acd87530a30f0bc25fc84f55c8c80", "361370e9b7f5e44c41eee29f2bb5cb3b755abb4b038bce6d6cbe08db7ff9cb74", "36e8dcd1813ca92ce7e4299120cee6c03adad33d89b54862c1b1a100443ac399", "378378973546ecc1dfaf9e24c160d683dd04df871ecd2dcc86ce658ca20f92c0", "419e6faee16097124ee627ed31572c7e80a1070efa25260b78097cca240e219a", "4287104c24e6a09b9b418761a1e7b1bbde65105f110690ca46a23600a3c606b8", "549f3e9778b148a47f4fb4682955ed88057eb627c9fe5467f33507c536deda9d", "5e359e9c531075220785603e5966eef20ccae9b3b6b8a06fdfb66c084361ce92", "5ee7f3dbbdba0da75dec7e94bd7a2b10fe57a83e1b38e678200a6ad8e7b14fdc", "62d55e96ec7b117d3d5e618c15efcf769e70a6effaee5842857b64fb4883887a", "719b6789acb2bc86ea9b33a701d7c43dc2fc56d95107fd3c5b0a8230164d4dfb", "7a70f2b60d48828cba94a54a8776b61a9c2657a803d47f5785f8062e3a9c7c55", "7b9e37f194f8bcdca8e9e6af92e2cbad79e360542effc2dd6b98d63955d8d8a3", "83b8fc18261b70f45bece2d392537c93dc81eb6c539a16c9ac994c47fc79f09a", "9473ad28375710ab18378e72b59422399b27e957e9339c413bf00793b4b12df0", "95b085b253080e5d09f7826f5e27dce067bae813a132023a77b739614a29de6e", "98b86c62c08c2e5dc98a9c856d4a95329d11b1c6058cb9b5191d5ea6891acd09", "a3bd01d6d3ed3d7c06d7f9979ba5d68281f15383fafd53b81aa44b9191047cf8", "c81a6afc1d2531a9ada50b58f8c36197f8418ef3d0611d4c1d7af93fdcda764f", "ce75ed495a746e3e78cfa22a77096b3bff2eda995616cb7a542047f233091268", "dae8618c0bcbfcf6cf91350f8abcdd84158323711566a8c5892b5c7f832af76f", "df0b02c6705c5d1c25cc35c7b5d6b6f9b3b30833f9d178843397ae55ecc2eebb", "e3660744cda0d94b90141cdd0db9308b958a372cfeee8d7188fdf5ad9108ea82", "f2362d0ca3e16c37782c1054d7972b8ad2729169567e3f0f4e5dd3cdf85f188e"]
 pandocfilters = ["b3dd70e169bb5449e6bc6ff96aea89c5eea8c5f6ab5e207fc2f521a2cf4a0da9"]
@@ -911,7 +847,6 @@ prompt-toolkit = ["1df952620eccb399c53ebb359cc7d9a8d3a9538cb34c5a1344bdbeb29fbcc
 ptyprocess = ["923f299cc5ad920c68f2bc0bc98b75b9f838b93b599941a6b63ddbc2476394c0", "d7cc528d76e76342423ca640335bd3633420dc1366f258cb31d05e865ef5ca1f"]
 pygments = ["78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d", "dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc"]
 python-dateutil = ["1adb80e7a782c12e52ef9a8182bebeb73f1d7e24e374397af06fb4956c8dc5c0", "e27001de32f627c22380a688bcc43ce83504a7bc5da472209b4c70f02829f0b8"]
-python-editor = ["a3c066acee22a1c94f63938341d4fb374e3fdd69366ed6603d7b24bed1efc565"]
 python-slugify = ["7723daf30996db26573176bddcdf5fcb98f66dc70df05c9cb29f2c79b8193245"]
 pywavelets = ["02b4e2c4fbeb9391a8aa0fc11fe8dcb75513e6e9b9bb7006bf161b3c79e4c2f7", "0f08d9a00a2980f2e70bce016323af22c8fc0b6b1ee908497bff3d24c89014bf", "13f82376850e7d96f51f01d5bba4ca4ac7faee18a7660f452b0ad882d158398d", "1843bba99e6676c4b9f3e7551893424f82f28a2040082a0f4e435241ede0290d", "2dc618cae9dcb8502c726169c783af9a115d891d50d309b4221d3b14d3bf183c", "3b9348a2f744e40dcf80cb350d52acd0f7a0750f28d46fb004f81e189b0c250d", "3c0082b66dbd9200acd955e58b56e73695df71c1eead3aa0d3b3ec929fe17470", "42a7acfc23eeea7ddb2b958ae9c368bb68e85e6021f171c92294a8dfe04fc90a", "64bf9a3e4d9aec882f7a5a6c53be0e6bd19bffe455f019099dec3f1364d30c10", "655634f86dcd71c995955974c99c7216f79decd1986afeac1362584196f3e3d6", "68d63aab066f3cb325ee13aa355e8f2e48f8bba225dd93fc2f33d99e4419e872", "805fcb6e8a5e6822fb26e8b8a75a05f647e7cbba3ebd9f4c21d77f937e7d2e17", "87d38acd6cd579c86bddd9b76da67ab92583a2b3e1610bdd0ecaeb617b5d4867", "96f4ac6f01b0a8720e59fb1943b27d1e72af31395e3ba46d62bba34fb2e6dea8", "97582bbc55c7bd5fb84271cd2534c0b930c0da9b596921989e35bbe69961880d", "aca08fce722f3a2577bd836f65f7a3a726329a519c58ed157d880b435b384784", "b071fe8807492528e72a9b84fbd697eeb751224037e98caec44e3b272197729c", "b40ae67503d8a5811bede8d1e20ca610127469555fe0e74065ee19cbef54511c", "b9ea9899f1fdacc26adb9d200fb8ee1061636b2398a712a74e6c06d99f8f5ea0", "c75424279918671b717efb438d000533a20c0678f3a27b66273d16018c135dfb", "c9b2aeb46f2eda852bc04330a2c1dae908728bccfed7d17bf852145dfbd96267", "cdf7a3d8fc846d318d2ffa50c800f52a84cb7225c2b1ef7a7426f16be8056eec", "e1749202bb96b021ea196fb58aa5e6ef8d66b76de8c2c8c956daa2eade85ae68", "f6bc5116c4be1b436e2259dec3159bbcc48f29fd3a51cb2f173f26b914138fbe", "f839625818a8752b233be605f4e19da5bb2501d1077c2ac9588c4346ca1663ed"]
 pywinpty = ["349eef36414b038426e65d96ecccfa581c437562cc164fb4faffe6f46963bc80", "4617637c38ae9099a99f73d8dbeb9c752743693bd1dca6ea3b1d520a7248ebf3", "4ee8193b19d77ab59097a000a2c52b36e768e92263812e0c0b40306be8927fb4", "4f6c850db79dd19b1d842d81a8c08fd7efad5e160a1effbba10ba738a5a35cb2", "4fd720b20bb69f1b7ca2060e84503ae843972fcb006ae6e8ddd6ab212fe8911c", "79f2b4584111e36826e587d33eb4e7416a12ae1d6c094cb554e873c5c162fa5f", "87ae1a2301fbce7a3005dac7cdf8ce8a4162f05130348234b87caef260771e96"]
@@ -922,8 +857,6 @@ send2trash = ["60001cc07d707fe247c94f74ca6ac0d3255aabcb930529690897ca2a39db28b2"
 simplegeneric = ["dc972e06094b9af5b855b3df4a646395e43d1c9d0d39ed345b7393560d0b9173"]
 six = ["70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9", "832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb"]
 sqlalchemy = ["ef6569ad403520ee13e180e1bfd6ed71a0254192a934ec1dbd3dbf48f4aa9524"]
-sqlalchemy-continuum = ["969258e409678d734b4ec12b4e31eca5d4543c75e0d5b3a265f07eefb2adc02d"]
-sqlalchemy-utils = ["78823042b1415e69b061c66beebef99ed61b73e75f23453f91977918a68322a3"]
 terminado = ["55abf9ade563b8f9be1f34e4233c7b7bde726059947a593322e8a553cc4c067a", "65011551baff97f5414c67018e908110693143cfbaeb16831b743fe7cad8b927"]
 testpath = ["039fa6a6c9fd3488f8336d23aebbfead5fa602c4a47d49d83845f55a595ec1b4", "0d5337839c788da5900df70f8e01015aec141aa3fe7936cb0d0a2953f7ac7609"]
 tinydb = ["2b3dfb59dfb981bf719773bbf78e10ff2081104fe62793d1c4bdbd6f9c62a843", "643807a7793c6ee358d7d7b548ea0828660bff1899b178307bb862e97df645b1"]

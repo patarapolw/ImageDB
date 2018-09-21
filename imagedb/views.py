@@ -2,7 +2,7 @@ from flask import render_template, send_file, request
 import os
 from urllib.parse import unquote
 
-from . import app, config
+from . import app
 
 
 @app.route('/')

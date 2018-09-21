@@ -5,6 +5,8 @@ import atexit
 from send2trash import send2trash
 import shutil
 from pathlib import Path
+from datetime import datetime, timedelta
+from IPython.display import display
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -23,9 +25,14 @@ config = {
 class ImageDB:
     def __init__(self, db_path, host='localhost', port='8000', debug=False, runserver=False):
         global config
-        config['image_db'] = self
 
-        self.db_folder = os.path.splitext(db_path)[0]
+        os.environ.update({
+            'HOST': host,
+            'PORT': port,
+            'DEBUG': '1' if debug else '0'
+        })
+
+        self.folder = os.path.splitext(db_path)[0]
 
         self.engine = create_engine('sqlite:///' + os.path.abspath(db_path),
                                     connect_args={'check_same_thread': False})
@@ -37,28 +44,46 @@ class ImageDB:
 
         self.server_thread = None
         if runserver:
-            self.runserver(host, port, debug)
+            self.runserver()
 
-        self.recent = []
         atexit.register(self._cleanup)
+        
+        config.update({
+            'session': self.session,
+            'folder': self.folder
+        })
 
-    def _cleanup(self):
-        for stack in self.recent:
-            for path in stack['path']:
+    @staticmethod
+    def _cleanup():
+        for stack in config['recent']:
+            for path in stack['deleted']:
                 send2trash(str(path))
 
-    def runserver(self, host='localhost', port='8000', debug=False):
-        open_browser_tab('http://{}:{}'.format(host, port))
+    def runserver(self):
+        def _runserver():
+            app.run(
+                host=os.getenv('HOST', 'localhost'),
+                port=os.getenv('PORT', '8000'),
+                debug=True if os.getenv('DEBUG', '0') == '1' else False
+            )
 
-        self.server_thread = Thread(target=app.run, kwargs=dict(
-            host=host,
-            port=port,
-            debug=debug
-        ))
-        self.server_thread.daemon = True
-        self.server_thread.start()
+        def _runserver_in_thread():
+            open_browser_tab('http://{}:{}'.format(
+                os.getenv('HOST', 'localhost'),
+                os.getenv('PORT', '8000')
+            ))
+            self.server_thread = Thread(target=_runserver)
+            self.server_thread.daemon = True
+            self.server_thread.start()
 
-    def search(self, tags=None, content=None, type_='partial'):
+        if os.getenv('THREADED_IMAGE_SERVER', '1') == '1':
+            _runserver_in_thread()
+        elif os.getenv('IMAGE_SERVER', '1') == '1':
+            _runserver()
+        else:
+            _runserver_in_thread()
+
+    def search(self, tags=None, content=None, type_='partial', since=None, until=None):
         def _compare(text, text_compare):
             if type_ == 'partial':
                 return text_compare in text
@@ -77,7 +102,15 @@ class ImageDB:
                 if any(_compare(db_image.info, text_compare) for db_image in q if db_image.info):
                     yield db_card
 
-        query = self.session.query(db.Image).order_by(db.Image.modified.desc())
+        query = self.session.query(db.Image)
+        if since:
+            if isinstance(since, timedelta):
+                since = datetime.now() - since
+            query = query.filter(db.Image.modified > since)
+        if until:
+            query = query.filter(db.Image.modified < until)
+
+        query = iter(query.order_by(db.Image.modified.desc()))
 
         if tags:
             if isinstance(tags, str):
@@ -89,34 +122,53 @@ class ImageDB:
         if content:
             query = _filter_slide(content, query)
 
-        return list(query)
+        return query
 
     def optimize(self):
         paths = set()
         for db_image in self.search():
             if not db_image.exists():
+                print(db_image)
                 db_image.delete()
-            paths.add(db_image.path)
+            else:
+                paths.add(db_image.path)
 
-        for path in Path(self.db_folder).glob('*.*'):
+        for path in Path(self.folder).glob('**/*.*'):
             if path not in paths:
-                send2trash(path)
+                print(path)
+                send2trash(str(path))
+
+    def undo(self):
+        if len(config['recent']) > 0:
+            stack = config['recent'].pop()
+
+            for path in stack.get('deleted', []):
+                path = Path(path)
+                if path.name[0] == '_':
+                    if path.with_name(path.name[1:]).exists():
+                        shutil.move(str(path.with_name(path.name[1:])), str(path.with_name('_' + path.name)))
+                        atexit.register(send2trash,
+                                        str(path.with_name('_' + path.name)))
+                    shutil.move(str(path), str(path.with_name(path.name[1:])))
+
+            for src, dst in stack.get('moved', []):
+                shutil.move(src=dst, dst=src)
+
+            # for db_item_version in reversed(stack.get('db', [])):
+            #     db_item_version.revert()
+
+            self.session.commit()
+
+    def last(self, count=1):
+        for i, db_image in enumerate(self.search()):
+            if i >= count:
+                break
+            display(db_image)
 
     @staticmethod
-    def undo():
-        if config['recent']:
-            stack = config['recent'][-1]
-
-            for path in stack['path']:
-                if path.with_name('_' + path.name).exists():
-                    shutil.move(str(path), str(path.with_name('__' + path.name)))
-                    shutil.move(str(path.with_name('_' + path.name)),
-                                str(path.with_name(path.name)))
-                    atexit.register(send2trash,
-                                    str(path.with_name('__' + path.name)))
-
-            for db_image in stack['db_images']:
-                db_image.versions[-1].revert()
+    def import_images(file_path, tags=None):
+        for p in Path(file_path).glob('**/*.py'):
+            db.Image.from_existing(p, tags=tags)
 
 
 from .views import *

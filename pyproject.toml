@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "imagedb"
-version = "0.1.4dev1"
+version = "0.1.4dev21"
 description = "Store images, especially from Clipboard, in database"
 authors = ["patarapolw <patarapolw@gmail.com>"]
 
@@ -8,15 +8,14 @@ authors = ["patarapolw <patarapolw@gmail.com>"]
 python = "*"
 pillow = "^5.2"
 sqlalchemy = "^1.2"
-SQLAlchemy-Continuum = "^1.3"
 nonrepeat = "^0.1.1"
 flask = "^1.0"
 python-slugify = "^1.2"
 send2trash = "^1.5"
 imagehash = "^4.0"
-
-[tool.poetry.dev-dependencies]
+click = "^6.7"
 jupyter = "^1.0"
 notebook = "^5.6"
+
+[tool.poetry.dev-dependencies]
 tinydb = "^3.11"
-alembic = "^1.0"
