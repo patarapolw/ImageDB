@@ -7,6 +7,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 from IPython.display import display
+import sys
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -29,7 +30,8 @@ class ImageDB:
         os.environ.update({
             'HOST': host,
             'PORT': port,
-            'DEBUG': '1' if debug else '0'
+            'DEBUG': '1' if debug else '0',
+            'IMAGE_SERVER': '1'
         })
 
         self.folder = os.path.splitext(db_path)[0]
@@ -76,12 +78,12 @@ class ImageDB:
             self.server_thread.daemon = True
             self.server_thread.start()
 
-        if os.getenv('THREADED_IMAGE_SERVER', '1') == '1':
+        if 'ipykernel' in ' '.join(sys.argv):
             _runserver_in_thread()
-        elif os.getenv('IMAGE_SERVER', '1') == '1':
-            _runserver()
+        elif os.getenv('THREADED_IMAGE_SERVER', '0') == '1':
+            _runserver_in_thread()
         else:
-            _runserver_in_thread()
+            _runserver()
 
     def search(self, tags=None, content=None, type_='partial', since=None, until=None):
         def _compare(text, text_compare):
