@@ -14,19 +14,16 @@ from urllib.parse import quote
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, select
 from sqlalchemy.orm import relationship, deferred
-# import sqlalchemy
-# import sqlalchemy_continuum
 
 from .util import shrink_image, trim_image, HAlign, VAlign
+from .config import config
 
 Base = declarative_base()
-# sqlalchemy_continuum.make_versioned(user_cls=None)
 
 SIMILARITY_THRESHOLD = 3
 
 
 class Image(Base):
-    __versioned__ = {}
     __tablename__ = 'image'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -49,6 +46,15 @@ class Image(Base):
             'tags': self.tags
         }
 
+    @property
+    def url(self):
+        return 'http://{}:{}/images?filename={}&time={}'.format(
+            os.getenv('HOST', 'localhost'),
+            os.getenv('PORT', '8000'),
+            quote(str(self.path), safe=''),
+            quote(datetime.now().isoformat())
+        )
+
     def to_base64(self):
         with self.path.open('rb') as f:
             base64_str = base64.b64encode(f.read()).decode()
@@ -59,12 +65,7 @@ class Image(Base):
         return '<img src="{}" />'.format(str(self.path.relative_to('.')))
 
     def to_url(self):
-        return '<img src="http://{}:{}/images?filename={}&time={}" />'.format(
-            os.getenv('HOST', 'localhost'),
-            os.getenv('PORT', '8000'),
-            quote(str(self.path), safe=''),
-            quote(datetime.now().isoformat())
-        )
+        return '<img src="{}" />'.format(self.url)
 
     def _repr_html_(self):
         if os.getenv('IMAGE_SERVER', '1') == '1':
@@ -72,8 +73,8 @@ class Image(Base):
         else:
             return self.to_base64()
 
-    def __repr__(self):
-        return repr(self.to_json())
+    # def __repr__(self):
+    #     return repr(self.to_json())
 
     def add_tags(self, tags='marked'):
         """
@@ -81,8 +82,6 @@ class Image(Base):
         :param str|list|tuple tags:
         :return:
         """
-        from . import config
-
         def _mark(tag):
             db_tag = config['session'].query(Tag).filter_by(name=tag).first()
             if db_tag is None:
@@ -119,8 +118,6 @@ class Image(Base):
         :param str|list|tuple tags:
         :return:
         """
-        from . import config
-
         def _unmark(tag):
             db_tag = config['session'].query(Tag).filter_by(name=tag).first()
             if db_tag is None:
@@ -150,8 +147,6 @@ class Image(Base):
 
     @filename.setter
     def filename(self, new_filename):
-        from . import config
-
         if self.filename:
             if self.filename != new_filename:
                 new_filename = Path(new_filename)
@@ -194,8 +189,6 @@ class Image(Base):
         :param str|list|tuple tags:
         :return:
         """
-        from . import config
-
         if not filename or filename == 'image.png':
             filename = 'blob/' + str(uuid4())[:8] + '.png'
 
@@ -211,13 +204,17 @@ class Image(Base):
         return cls._create(filename, tags=tags, pil_handle=im_bytes_io)
 
     @classmethod
-    def from_existing(cls, filename, tags=None):
-        return cls._create(filename, tags=tags)
+    def from_existing(cls, abs_path, rel_path=None, tags=None):
+        if rel_path is None:
+            try:
+                rel_path = abs_path.relative_to(config['folder'])
+            except ValueError:
+                rel_path = Path(abs_path.name)
+
+        return cls._create(filename=str(rel_path), tags=tags, pil_handle=abs_path)
 
     @classmethod
-    def _create(cls, filename, tags, pil_handle=None):
-        from . import config
-
+    def _create(cls, filename, tags, pil_handle):
         image_path = Path(config['folder'])
         image_path.joinpath(filename).parent.mkdir(parents=True, exist_ok=True)
 
@@ -225,9 +222,6 @@ class Image(Base):
         do_save = True
         if true_filename.exists():
             do_save = False
-
-        if pil_handle is None:
-            pil_handle = true_filename
 
         im = PIL.Image.open(pil_handle)
         im = trim_image(im)
@@ -260,8 +254,6 @@ class Image(Base):
             return db_image
 
     def delete(self, recent_items=None):
-        from . import config
-
         if recent_items is None:
             recent_items = dict()
 
@@ -292,9 +284,11 @@ class Image(Base):
 
     @property
     def path(self):
-        from . import config
-
         return Path(config['folder']).joinpath(self.filename)
+
+    @path.setter
+    def path(self, file_path):
+        self._filename = file_path.relative_to(Path(config['folder']))
 
     def v_join(self, db_images, h_align=HAlign.CENTER):
         return self._join(db_images, h_align=h_align, v_align=None)
@@ -303,8 +297,6 @@ class Image(Base):
         return self._join(db_images, h_align=None, v_align=v_align)
 
     def _join(self, db_images, h_align=None, v_align=None):
-        from . import config
-
         if not any(self.id == db_image.id for db_image in db_images):
             db_images.insert(0, self)
 
@@ -371,8 +363,6 @@ class Image(Base):
 
     @classmethod
     def similar_images_by_hash(cls, h):
-        from . import config
-
         for db_image in config['session'].query(cls).all():
             if imagehash.hex_to_hash(db_image.image_hash) - imagehash.hex_to_hash(h) < SIMILARITY_THRESHOLD:
                 yield db_image
@@ -384,8 +374,6 @@ class Image(Base):
         yield from cls.similar_images_by_hash(h)
 
     def replace_with(self, newer_db_image):
-        from . import config
-
         recent_items = {
             # 'db': [self.versions[0], newer_db_image.versions[0]],
             'deleted': [self.path.with_name('_' + self.path.name)],
@@ -404,7 +392,6 @@ class Image(Base):
 
 
 class Tag(Base):
-    __versioned__ = {}
     __tablename__ = 'tag'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -424,9 +411,6 @@ class Tag(Base):
 
 
 class TagImageConnect(Base):
-    __versioned__ = {
-        'exclude': ['tag_name']
-    }
     __tablename__ = 'tag_image_connect'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -446,6 +430,3 @@ class TagImageConnect(Base):
 
     def __repr__(self):
         return repr(self.to_json())
-
-
-# sqlalchemy.orm.configure_mappers()

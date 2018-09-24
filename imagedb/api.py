@@ -3,7 +3,8 @@ from werkzeug.utils import secure_filename
 
 from io import BytesIO
 
-from . import app, db, config
+from . import app, db
+from .config import config
 
 filename = None
 

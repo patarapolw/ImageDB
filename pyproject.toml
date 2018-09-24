@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "imagedb"
-version = "0.1.5.1"
+version = "0.1.6.3"
 description = "Store images, especially from Clipboard, in a database, and spin an image server (for usage in Jupyter Notebook)."
 authors = ["Pacharapol Withayasakpunt <patarapolw@gmail.com>"]
 readme = 'README.md'
