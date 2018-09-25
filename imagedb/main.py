@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from IPython.display import display
 import sys
 import os
+import subprocess
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -132,13 +133,15 @@ class ImageDB:
         return query
 
     def search_filename(self, filename_regex):
-        for path in Path(self.folder).glob('**/*.*'):
-            if path.suffix.lower() in {'.png', '.jpg', '.jp2', '.jpeg', '.gif'}:
-                if re.search(filename_regex, str(path), re.IGNORECASE):
+        for path in self.images_in_path(self.folder):
+            if re.search(filename_regex, str(path), re.IGNORECASE):
+                db_image = self.session.query(db.Image) \
+                    .filter_by(filename=str(path.relative_to(self.folder))).first()
+                if db_image is None:
                     db_image = db.Image()
                     db_image.path = path
 
-                    yield db_image
+                yield db_image
 
     def optimize(self):
         paths = set()
@@ -149,11 +152,10 @@ class ImageDB:
             else:
                 paths.add(db_image.path)
 
-        for path in Path(self.folder).glob('**/*.*'):
-            if path.suffix.lower() in {'.png', '.jpg', '.jp2', '.jpeg', '.gif'}:
-                if path not in paths:
-                    print(path)
-                    send2trash(str(path))
+        for path in self.images_in_path(self.folder):
+            if path not in paths:
+                print(path)
+                send2trash(str(path))
 
     def undo(self):
         if len(config['recent']) > 0:
@@ -183,6 +185,41 @@ class ImageDB:
         if file_path is None:
             file_path = self.folder
 
+        for p in self.images_in_path(file_path):
+            db.Image.from_existing(p, tags=tags)
+
+    @staticmethod
+    def images_in_path(file_path):
         for p in Path(file_path).glob('**/*.*'):
             if p.suffix.lower() in {'.png', '.jpg', '.jp2', '.jpeg', '.gif'}:
-                db.Image.from_existing(p, tags=tags)
+                yield p
+
+    def import_pdf(self, pdf_filename, force=False):
+        def _extract_pdf():
+            subprocess.call([
+                'pdfimages',
+                '-p',
+                '-png',
+                pdf_filename,
+                str(dst_folder_path.joinpath('img'))
+            ])
+
+        dst_folder_path = Path(self.folder).joinpath('pdf').joinpath(Path(pdf_filename).stem)
+
+        if not dst_folder_path.exists():
+            dst_folder_path.mkdir(parents=True)
+            _extract_pdf()
+        elif force:
+            _extract_pdf()
+
+        self.import_images(file_path=dst_folder_path,
+                           tags=pdf_filename)
+
+    def get_pdf_image(self, filename_regex, page_start, page_end):
+        for db_image in self.search_filename(filename_regex):
+            match_obj = re.search(r'(\d+)-\d+\.png', str(db_image.path), flags=re.IGNORECASE)
+
+            if match_obj is not None:
+                page_number = int(match_obj.group(1))
+                if page_number in range(page_start, page_end+1):
+                    yield db_image

@@ -10,6 +10,7 @@ import logging
 import base64
 import os
 from urllib.parse import quote
+from send2trash import send2trash
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, select
@@ -58,13 +59,13 @@ class Image(Base):
         with self.path.open('rb') as f:
             base64_str = base64.b64encode(f.read()).decode()
 
-        return '<img src="data:image/png;base64,{}" />'.format(base64_str)
+        return '<img src="data:image/png;base64,{}" style="max-width: 800px;" />'.format(base64_str)
 
     def to_relative_path(self):
-        return '<img src="{}" />'.format(str(self.path.relative_to('.')))
+        return '<img src="{}" style="max-width: 800px;" />'.format(str(self.path.relative_to('.')))
 
     def to_url(self):
-        return '<img src="{}" />'.format(self.url)
+        return '<img src="{}" style="max-width: 800px;" />'.format(self.url)
 
     def _repr_html_(self):
         if os.getenv('IMAGE_SERVER', '1') == '1':
@@ -91,7 +92,7 @@ class Image(Base):
                 config['session'].commit()
 
             db_tic = config['session'].query(TagImageConnect).filter_by(tag_id=db_tag.id,
-                                                                                 image_id=self.id).first()
+                                                                        image_id=self.id).first()
             if db_tic is None:
                 db_tic = TagImageConnect()
                 db_tic.tag_id = db_tag.id
@@ -124,7 +125,7 @@ class Image(Base):
                 # return
 
             db_tic = config['session'].query(TagImageConnect).filter_by(tag_id=db_tag.id,
-                                                                                 image_id=self.id).first()
+                                                                        image_id=self.id).first()
             if db_tic is None:
                 raise ValueError('Cannot unmark "{}"'.format(tag))
                 # return
@@ -194,13 +195,21 @@ class Image(Base):
 
     @classmethod
     def from_existing(cls, abs_path, rel_path=None, tags=None):
+        is_relative = False
+
         if rel_path is None:
             try:
                 rel_path = abs_path.relative_to(config['folder'])
+                is_relative = True
             except ValueError:
                 rel_path = Path(abs_path.name)
 
-        return cls._create(filename=str(rel_path), tags=tags, pil_handle=abs_path)
+        db_image = cls._create(filename=str(rel_path), tags=tags, pil_handle=abs_path)
+        if isinstance(db_image, str):
+            if is_relative:
+                send2trash(str(abs_path))
+
+        return db_image
 
     @classmethod
     def _create(cls, filename, tags, pil_handle):
@@ -217,22 +226,26 @@ class Image(Base):
         im = shrink_image(im)
 
         h = str(imagehash.dhash(im))
-        try:
-            pre_existing = next(cls.similar_images_by_hash(h))
-            pre_existing.modified = datetime.now()
-            config['session'].commit()
 
-            err_msg = 'Similar image exists: {}'.format(pre_existing.path)
-            # raise ValueError(err_msg)
-            logging.error(err_msg)
-            return err_msg
+        db_image = None
+        for pre_existing in cls.similar_images_by_hash(h):
+            if pre_existing.filename != filename:
+                pre_existing.modified = datetime.now()
+                config['session'].commit()
 
-        except StopIteration:
-            if do_save:
-                im.save(true_filename)
+                err_msg = 'Similar image exists: {}'.format(pre_existing.path)
+                # raise ValueError(err_msg)
+                logging.error(err_msg)
+                return err_msg
+            else:
+                db_image = pre_existing
 
+        if do_save:
+            im.save(true_filename)
+
+        if db_image is None:
             db_image = cls()
-            db_image._filename = filename
+            db_image.filename = filename
             db_image.image_hash = h
             config['session'].add(db_image)
             config['session'].commit()
@@ -240,7 +253,7 @@ class Image(Base):
             if tags:
                 db_image.add_tags(tags)
 
-            return db_image
+        return db_image
 
     def delete(self, recent_items=None):
         if recent_items is None:
@@ -277,7 +290,7 @@ class Image(Base):
 
     @path.setter
     def path(self, file_path):
-        self.filename = file_path.relative_to(Path(config['folder']))
+        self.filename = str(file_path.relative_to(Path(config['folder'])))
 
     def v_join(self, db_images, h_align=HAlign.CENTER):
         return self._join(db_images, h_align=h_align, v_align=None)
