@@ -27,7 +27,7 @@ class Image(Base):
     __tablename__ = 'image'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    _filename = Column(String, nullable=False, unique=True)
+    filename = Column(String, nullable=False, unique=True)
     info = Column(String, nullable=True, unique=True)
     created = Column(DateTime, default=datetime.now)
     modified = Column(DateTime, default=datetime.now, onupdate=datetime.now)
@@ -48,11 +48,10 @@ class Image(Base):
 
     @property
     def url(self):
-        return 'http://{}:{}/images?filename={}&time={}'.format(
+        return 'http://{}:{}/images?filename={}'.format(
             os.getenv('HOST', 'localhost'),
             os.getenv('PORT', '8000'),
-            quote(str(self.path), safe=''),
-            quote(datetime.now().isoformat())
+            quote(str(self.path), safe='')
         )
 
     def to_base64(self):
@@ -141,40 +140,30 @@ class Image(Base):
             for x in tags:
                 _unmark(x)
 
-    @property
-    def filename(self):
-        return self._filename
+    def move(self, new_filename):
+        new_filename = Path(new_filename).relative_to(config['folder'])
+        new_filename = new_filename \
+            .with_name(new_filename.name) \
+            .with_suffix(self.path.suffix)
 
-    @filename.setter
-    def filename(self, new_filename):
-        if self.filename:
-            if self.filename != new_filename:
-                new_filename = Path(new_filename)
-                new_filename = new_filename \
-                    .with_name(new_filename.name)\
-                    .with_suffix(self.path.suffix)
-                new_filename = nonrepeat_filename(str(new_filename),
-                                                  primary_suffix='-'.join(self.tags),
-                                                  root=config['folder'])
+        if self.filename and self.filename != new_filename:
+            new_filename = nonrepeat_filename(str(new_filename),
+                                              primary_suffix='-'.join(self.tags),
+                                              root=config['folder'])
 
-                true_filename = Path(config['folder']).joinpath(new_filename)
-                true_filename.parent.mkdir(parents=True, exist_ok=True)
+            true_filename = Path(config['folder']).joinpath(new_filename)
+            true_filename.parent.mkdir(parents=True, exist_ok=True)
 
-                shutil.move(str(self.path), str(true_filename))
+            shutil.move(str(self.path), str(true_filename))
 
-                config['recent'].append({
-                    # 'db': [self.versions[0]],
-                    'moved': [(str(self.path), str(true_filename))]
-                })
+            config['recent'].append({
+                'moved': [(str(self.path), str(true_filename))]
+            })
 
-                self._filename = new_filename
-                config['session'].commit()
-            else:
-                pass
-        else:
-            self._filename = new_filename
-            config['session'].add(self)
+            self.filename = new_filename
             config['session'].commit()
+
+            return new_filename
 
     @property
     def tags(self):
@@ -288,7 +277,7 @@ class Image(Base):
 
     @path.setter
     def path(self, file_path):
-        self._filename = file_path.relative_to(Path(config['folder']))
+        self.filename = file_path.relative_to(Path(config['folder']))
 
     def v_join(self, db_images, h_align=HAlign.CENTER):
         return self._join(db_images, h_align=h_align, v_align=None)
@@ -343,14 +332,14 @@ class Image(Base):
 
         assert x_offset == total_width or y_offset == total_height
 
-        temp_path = self.path.with_name('_' + self.path.name)
-        shutil.move(src=str(self.path), dst=str(temp_path))
-
-        new_im.save(self.path)
-
         recent_items = {
-            'deleted': [temp_path]
+            'deleted': [self.path]
         }
+
+        new_im_filename = nonrepeat_filename(str(self.path))
+        self.path = new_im_filename
+        new_im.save(new_im_filename)
+        config['session'].commit()
 
         for db_image in db_images:
             if self.id != db_image.id:
@@ -372,23 +361,6 @@ class Image(Base):
         h = str(imagehash.dhash(im))
 
         yield from cls.similar_images_by_hash(h)
-
-    def replace_with(self, newer_db_image):
-        recent_items = {
-            # 'db': [self.versions[0], newer_db_image.versions[0]],
-            'deleted': [self.path.with_name('_' + self.path.name)],
-            'moved': [(str(newer_db_image.path), str(self.path))]
-        }
-
-        shutil.move(str(self.path), str(self.path.with_name('_' + self.path.name)))
-        shutil.move(str(newer_db_image.path), str(self.path))
-        
-        self._filename = newer_db_image.filename
-        config['session'].delete(newer_db_image)
-        config['session'].commit()
-        config['recent'].append(recent_items)
-
-        return self
 
 
 class Tag(Base):

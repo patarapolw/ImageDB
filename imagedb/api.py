@@ -45,7 +45,7 @@ def rename_image():
     if filename is not None and db_image is not None:
         post_json = request.get_json()
         db_image.add_tags(post_json['tags'])
-        db_image.filename = post_json['filename']
+        db_image.move(new_filename=post_json['filename'])
 
         return jsonify({
             'filename': db_image.filename,
